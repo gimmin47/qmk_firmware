@@ -6,7 +6,6 @@ BOOTLOADER = qmk-dfu # For Elite-C
 
 # Pointing Device (trackball sensor)
 POINTING_DEVICE_DRIVER = pmw3389
-PMW3389_CS_PIN = F7
 
 RGB_MATRIX_ENABLE = no
 
@@ -17,6 +16,6 @@ OLED_DRIVER = SSD1306
 
 LTO_ENABLE = yes
 
-TAP_DANCE_ENABLE = yes
+TAP_DANCE_ENABLE = no
 
 DYNAMIC_TAPPING_TERM_ENABLE = no

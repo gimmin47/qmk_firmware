@@ -1,12 +1,19 @@
 #include QMK_KEYBOARD_H
+#include<stdio.h>
+
+// sudo ./util/docker_build.sh handwired/dactyl_manuform/4x6_tb:gimmin:dfu-split-left
+// sudo ./util/docker_build.sh handwired/dactyl_manuform/4x6_tb:gimmin:dfu-split-right
+
+uint16_t my_cpi = USER_CPI;
+char my_cpi_str[5];
 
 //Layers
 enum layers {
     _COLEMAKDH = 0,
-    _SPECIAL,
-    _NAVIGATION,
-    _MOUSE,
+    _RAISE,
+    _LOWER,
     _NUMPAD,
+    _MOUSE,
     _WASD,
 };
 
@@ -22,8 +29,12 @@ enum custom_keycodes {
     MOUSE = TT(_MOUSE),
     NUMPD = TT(_NUMPAD),
     WASD = TG(_WASD),
-    NAV = TT(_NAVIGATION),
-    SPC = TT(_SPECIAL),
+    NAV = TT(_LOWER),
+    SPC = TT(_RAISE),
+    SNIPE = SAFE_RANGE,
+    RESET_CPI,
+    CPI_UP,
+    CPI_DOWN,
 };
 
 enum tap_dance {
@@ -33,6 +44,7 @@ enum tap_dance {
     TD_CPIUP,
     TD_CPIDN,
 };
+
 
 #define SFT_ESC  SFT_T(KC_ESC)
 #define CTL_BSPC CTL_T(KC_BSPC)
@@ -66,39 +78,30 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      *                                    +-------------+                +-------------+
      */
     [_COLEMAKDH] = LAYOUT_split_4x6_tb(
-        KC_ESC,  KC_Q,    KC_W,    KC_F,    KC_P,    KC_B,                KC_J,    KC_L,    KC_U,    KC_Y,    KC_SCLN, TD(TD_MINUS),
+        KC_ESC,  KC_Q,    KC_W,    KC_F,    KC_P,    KC_B,                KC_J,    KC_L,    KC_U,    KC_Y,    KC_SCLN, KC_MINUS,
         KC_TAB,  LGUI_A,  LALT_R,  LSFT_S,  _LCTL_T, KC_G,                KC_M,    RCTL_N,  RSFT_E,  RALT_I,  RGUI_O,  KC_QUOT,
         NUMPD,   KC_Z,    KC_X,    KC_C,    KC_D,    KC_V,                KC_K,    KC_H,    KC_COMM, KC_DOT,  KC_SLSH, KC_BSLS,
-                          KC_LBRC, KC_LPRN,                                                 KC_RPRN, KC_RBRC,
-                                            KC_BSPC, KC_SPC,                       KC_ENT,
-                                            MOUSE,   KC_DEL,                       KC_HOME,
-                                            NAV,     SPC,                 WASD,    KC_END
+                          _______, _______,                                                 _______, _______,
+                                            KC_BSPC, LT(NAV, KC_SPC),              LT(NAV, KC_ENT),
+                                            MOUSE,   LT(SPC, KC_INS),              KC_DEL,
+                                            NAV,     SPC,                 WASD,    _______
     ),
 
-    [_SPECIAL] = LAYOUT_split_4x6_tb(
-   TD(TD_GRAVE), KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_PIPE,
-        KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC, KC_CIRC,             KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_UNDS, TD(TD_EQUAL),
-        KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,               KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,
-                          _______, KC_PSCR,                                                 _______, _______,
-                                            _______, _______,                      DT_PRNT,
-                                            _______, _______,                      DT_UP,
-                                            _______, _______,             _______, DT_DOWN
-    ),
+    [_RAISE] = LAYOUT_split_4x6_tb(
 
-    [_NAVIGATION] = LAYOUT_split_4x6_tb(
-        _______, KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    _______,
-        _______, KC_HOME, KC_PGUP, KC_PGDN, KC_END,  _______,             KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______, _______,
-        _______, _______, _______, _______, _______, _______,             _______, _______, _______, _______, _______, _______,
+        _______, KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,             KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, _______,
+        KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,               KC_MINS, KC_EQL,  KC_LBRC, KC_RBRC, KC_BSLS, KC_GRAVE,
+        KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,              KC_UNDS, KC_PLUS, KC_LCBR, KC_RCBR, KC_PIPE, KC_TILD,
                           _______, _______,                                                 _______, _______,
                                             _______, _______,                      _______,
                                             _______, _______,                      _______,
                                             _______, _______,             _______, _______
     ),
 
-    [_MOUSE] = LAYOUT_split_4x6_tb(
-        _______, _______, _______, _______, _______, _______,             _______, KC_WH_L, KC_BTN3, KC_WH_R, _______, TD(TD_CPIUP),
-        _______, _______, _______, _______, _______, _______,             KC_WH_L, KC_BTN1, KC_WH_U, KC_BTN2, KC_WH_R, _______,
-        _______, _______, _______, _______, _______, _______,             _______, KC_WH_L, KC_WH_D, KC_WH_R, _______, TD(TD_CPIDN),
+    [_LOWER] = LAYOUT_split_4x6_tb(
+        _______, KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    _______,
+        _______, KC_LGUI, KC_LALT, KC_LSFT, KC_LCTL, _______,             KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______, _______,
+        _______, _______, _______, _______, _______, _______,             KC_PGUP, KC_HOME, KC_END,  KC_PGDN, _______, _______,
                           _______, _______,                                                 _______, _______,
                                             _______, _______,                      _______,
                                             _______, _______,                      _______,
@@ -106,11 +109,21 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [_NUMPAD] = LAYOUT_split_4x6_tb(
-        _______, _______, _______, _______, _______, _______,             _______, KC_7,    KC_8,    KC_9,    KC_PLUS, TD(TD_MINUS),
+        _______, _______, _______, _______, _______, _______,             _______, KC_7,    KC_8,    KC_9,    KC_PLUS, KC_MINUS,
         _______, _______, _______, _______, _______, _______,             _______, KC_4,    KC_5,    KC_6,    _______, KC_ASTR,
-        _______, _______, _______, _______, _______, _______,             _______, KC_1,    KC_2,    KC_3,    KC_ENT,  KC_SLSH,
-                          _______, _______,                                                 _______, KC_DOT,
+        _______, _______, _______, _______, _______, _______,             KC_DOT,  KC_1,    KC_2,    KC_3,    KC_ENT,  KC_SLSH,
+                          _______, _______,                                                 _______, _______,
                                             _______, _______,                      KC_0,
+                                            _______, _______,                      _______,
+                                            _______, _______,             _______, _______
+    ),
+
+    [_MOUSE] = LAYOUT_split_4x6_tb(
+        _______, _______, _______, _______, _______, _______,             _______, KC_WH_L, KC_BTN3, KC_WH_R, _______, CPI_UP,
+        _______, _______, _______, _______, _______, _______,             _______, KC_BTN1, KC_WH_U, KC_BTN2, SNIPE,   RESET_CPI,
+        _______, _______, _______, _______, _______, _______,             _______, KC_WH_L, KC_WH_D, KC_WH_R, _______, CPI_DOWN,
+                          _______, _______,                                                 _______, _______,
+                                            _______, _______,                      _______,
                                             _______, _______,                      _______,
                                             _______, _______,             _______, _______
     ),
@@ -139,144 +152,129 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case MOUSE:
-            return 100;
+            return FAST_TAPPING_TERM;
         case NAV:
-            return 100;
+            return FAST_TAPPING_TERM;
         case SPC:
-            return 100;
+            return FAST_TAPPING_TERM;
         case NUMPD:
-            return 100;
+            return FAST_TAPPING_TERM;
         default:
             return TAPPING_TERM;
     }
 }
 
-// Tap Dance Functions
-void dance_grave_finished(qk_tap_dance_state_t *state, void *user_data) {
-    if (state->count == 2) {
-        register_code (KC_RSFT);
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+    case SNIPE:
+        if(record->event.pressed) {
+            pointing_device_set_cpi(SNIPE_CPI);
+            sprintf(my_cpi_str, "%d", SNIPE_CPI);
+        } else {
+            pointing_device_set_cpi(my_cpi);
+            sprintf(my_cpi_str, "%d", my_cpi);
+        }
+        break;
+    case RESET_CPI:
+        if(record->event.pressed) {
+            pointing_device_set_cpi(USER_CPI);
+            sprintf(my_cpi_str, "%d", USER_CPI);
+            my_cpi = USER_CPI;
+        } else {
+            // when RESET_CPI is released
+        }
+        break;
+    case CPI_UP:
+        if(record->event.pressed) {
+            if(my_cpi + CPI_DELTA >= MAX_CPI) {
+                pointing_device_set_cpi(MAX_CPI);
+            } else {
+                pointing_device_set_cpi(pointing_device_get_shared_cpi() + CPI_DELTA);
+                my_cpi = pointing_device_get_shared_cpi();
+            }
+            sprintf(my_cpi_str, "%d", my_cpi);
+        } else {
+            // when CPI_UP is released
+        }
+        break;
+    case CPI_DOWN:
+        if(record->event.pressed) {
+            if(my_cpi - CPI_DELTA <= MIN_CPI) {
+                pointing_device_set_cpi(MIN_CPI);
+            } else {
+                pointing_device_set_cpi(pointing_device_get_shared_cpi() - CPI_DELTA);
+                my_cpi = pointing_device_get_shared_cpi();
+            }
+            sprintf(my_cpi_str, "%d", my_cpi);
+        } else {
+            // when CPI_DOWN is released
+        }
+        break;
     }
-    register_code (KC_GRAVE);
+    return true;
 }
-
-void dance_cpiup_finished(qk_tap_dance_state_t *state, void *user_data) {
-    pointing_device_set_cpi(pointing_device_get_cpi() + 100);
-}
-
-void dance_cpidn_finished(qk_tap_dance_state_t *state, void *user_data) {
-    pointing_device_set_cpi(pointing_device_get_cpi() - 100);
-}
-
-void dance_minus_finished(qk_tap_dance_state_t *state, void *user_data) {
-    if (state->count == 2) {
-        register_code (KC_RSFT);
-    }
-    register_code (KC_MINUS);
-}
-
-void dance_equal_finished(qk_tap_dance_state_t *state, void *user_data) {
-    if (state->count == 2) {
-        register_code (KC_RSFT);
-    }
-    register_code (KC_EQL);
-}
-
-void dance_grave_reset(qk_tap_dance_state_t *state, void *user_data) {
-    if (state->count == 2) {
-        unregister_code (KC_RSFT);
-    }
-    unregister_code (KC_GRAVE);
-}
-
-void dance_minus_reset(qk_tap_dance_state_t *state, void *user_data) {
-    if (state->count == 2) {
-        unregister_code (KC_RSFT);
-    }
-    unregister_code (KC_MINUS);
-}
-
-void dance_equal_reset(qk_tap_dance_state_t *state, void *user_data) {
-    if (state->count == 2) {
-        unregister_code (KC_RSFT);
-    }
-    unregister_code (KC_EQL);
-}
-
-qk_tap_dance_action_t tap_dance_actions[] = {
-    [TD_GRAVE] = ACTION_TAP_DANCE_FN_ADVANCED (NULL, dance_grave_finished, dance_grave_reset)
-   ,[TD_MINUS] = ACTION_TAP_DANCE_FN_ADVANCED (NULL, dance_minus_finished, dance_minus_reset)
-   ,[TD_EQUAL] = ACTION_TAP_DANCE_FN_ADVANCED (NULL, dance_equal_finished, dance_equal_reset)
-   ,[TD_CPIUP] = ACTION_TAP_DANCE_FN (dance_cpiup_finished)
-   ,[TD_CPIDN] = ACTION_TAP_DANCE_FN (dance_cpidn_finished)
-};
 
 #ifdef OLED_ENABLE
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
-    if (!is_keyboard_left()) {
-        return OLED_ROTATION_180;
-    }
-
-    return rotation;
+    return OLED_ROTATION_90;
 }
 
 bool oled_task_user(void) {
     // Host Keyboard Layer Status
-    oled_write_P(PSTR("Layer: "), false);
+    oled_clear();
+    oled_write_P(PSTR("Layer\nBase"), false);
 
-    switch (get_highest_layer(layer_state)) {
-        case _COLEMAKDH:
-            oled_write_P(PSTR("Default\n"), false);
-            break;
+    if(IS_LAYER_ON(_RAISE)) {
+        oled_write_P(PSTR("\nSpcl"), false);
+    } else {
+        oled_write_P(PSTR("\n"), false);
+    }
+    if(IS_LAYER_ON(_LOWER)) {
+        oled_write_P(PSTR("\nNav"), false);
+    } else {
+        oled_write_P(PSTR("\n"), false);
+    }
 
-        case _SPECIAL:
-            oled_write_P(PSTR("Special\n"), false);
-            break;
-
-        case _NAVIGATION:
-            oled_write_P(PSTR("Navigation\n"), false);
-            break;
-
-        case _MOUSE:
-            if (!is_keyboard_left()) {
-                oled_write_P(PSTR("Mouse"), false);
-            }
-
+    if(!is_keyboard_left()) {
+        if(IS_LAYER_ON(_NUMPAD)) {
+            oled_write_P(PSTR("\nNump"), false);
+        } else {
             oled_write_P(PSTR("\n"), false);
-            break;
-
-        case _NUMPAD:
-            if (!is_keyboard_left()) {
-                oled_write_P(PSTR("Numpad"), false);
-            }
-
+        }
+        if(IS_LAYER_ON(_MOUSE)) {
+            oled_write_P(PSTR("\nMous"), false);
+        } else {
             oled_write_P(PSTR("\n"), false);
-            break;
+        }
+    }
 
-        case _WASD:
-            if (is_keyboard_left()) {
-                oled_write_P(PSTR("WASD"), false);
-            }
-
+    if(is_keyboard_left()) {
+        if(IS_LAYER_ON(_WASD)) {
+            oled_write_P(PSTR("\nWASD"), false);
+        } else {
             oled_write_P(PSTR("\n"), false);
-            break;
+        }
+        oled_write_P(PSTR("\n\n\n\nCRI:\n"), false);
 
-        default:
-            // Or use the write_ln shortcut over adding '\n' to the end of your string
-            oled_write_ln_P(PSTR("Undefined"), false);
+        // Print CPI
+        oled_write(my_cpi_str, false);
     }
 
     // Host Keyboard LED Status
-    led_t led_state = host_keyboard_led_state();
-    oled_write_P(led_state.num_lock ? PSTR("NUM ") : PSTR("    "), false);
-    oled_write_P(led_state.caps_lock ? PSTR("CAP ") : PSTR("    "), false);
-    oled_write_P(led_state.scroll_lock ? PSTR("SCR ") : PSTR("    "), false);
+    if(is_keyboard_master()) {
+        led_t led_state = host_keyboard_led_state();
+        oled_write_P(!led_state.num_lock ? PSTR("\n!NUM ") : PSTR("    "), false);
+        oled_write_P(led_state.caps_lock ? PSTR("\nCAP ") : PSTR("    "), false);
+        oled_write_P(led_state.scroll_lock ? PSTR("\nSCR ") : PSTR("    "), false);
+    }
 
     return false;
 }
 #endif
 
-void pointing_device_init_user(void) {
-    pointing_device_set_cpi(1600);
+void keyboard_post_init_user(void) {
+    pointing_device_set_cpi(my_cpi);
+    sprintf(my_cpi_str, "%d", my_cpi);
 }
 
 void persistent_default_layer_set(uint16_t default_layer) {
