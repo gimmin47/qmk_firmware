@@ -8,6 +8,8 @@
 #    include "4x6_5.h"
 #elif defined(KEYBOARD_handwired_dactyl_manuform_4x6_tb)
 #    include "4x6_tb.h"
+#elif defined(KEYBOARD_handwired_dactyl_manuform_3x5_tb)
+#    include "3x5_tb.h"
 #elif defined(KEYBOARD_handwired_dactyl_manuform_5x6)
 #    include "5x6.h"
 #elif defined(KEYBOARD_handwired_dactyl_manuform_5x6_5)
